@@ -1,0 +1,114 @@
+sum(X,Y):-
+    S is X+Y,
+    write(S).
+
+sub(X,Y):-
+    S is X-Y,
+    write(S).
+
+mul(X,Y):-
+    S is X*Y,
+    write(S).
+
+div(X,Y):-
+    Y=\=0 -> S is X/Y, write(S);
+    write("Error: Division by Zero.").
+
+
+evenorodd(X):-
+    0 is X mod 2 -> write("Number is Even."); write("Number is Odd.").
+
+
+gcd(X,Y):-
+    Y is 0 -> write(X);
+    S is X mod Y,
+    gcd(Y, S).
+
+lcm(X,Y):-
+    Gcd is gcd(X,Y),
+    S is X*Y,
+    R is S/Gcd,
+    write(R).
+
+divideby2(X):-
+    0 is X mod 2 -> write("Number is divisible by 2."); write("Number is not divisible by 2.").
+
+divideby4(X):-
+    0 is X mod 4 -> write("Number is divisible by 4."); write("Number is not divisible by 4.").
+
+divideby2and3(X):-
+    0 is X mod 2, 0 is X mod 3 -> write("Number is divisible by 2 and 3 both.").
+
+
+fib(0, 0):- !.
+fib(1, 1):- !.
+
+fib(N, Result):-
+    N1 is N - 1,
+    N2 is N - 2,
+    fib(N1, Result1),
+    fib(N2, Result2),
+    Result is Result1 + Result2.
+
+
+
+fact(0, 1):- !.
+
+fact(N, Result):-
+    N > 0,
+    N1 is N - 1,
+    fact(N1, Result1),
+    Result is N * Result1.
+
+
+is_divisible(X,Y):-
+    0 is X mod Y.
+
+is_prime_helper(X,Y):-
+    Y*Y>X;
+    ( X mod Y =\= 0, Y1 is Y + 1, is_prime_helper(X,Y1)).
+
+is_prime(2):- true.
+is_prime(X):-
+    X > 2,
+    not(is_divisible(X,2)),
+    is_prime_helper(X, 3).
+
+
+check_prime:-
+    write("Enter a number: "),
+    read(X),
+    (is_prime(X) -> write("Number is prime"); write("Number is not prime")).
+
+
+male(dhruv).
+male(dhruvin).
+male(bhavesh).
+male(laxmichand).
+female(shilpa).
+female(navalben).
+
+parent_of(bhavesh, dhruv).
+parent_of(bhavesh, dhruvin).
+parent_of(shilpa, dhruv).
+parent_of(shilpa, dhruvin).
+parent_of(laxmichand, bhavesh).
+parent_of(navalben, bhavesh).
+
+father_of(X,Y):-
+    male(X), parent_of(X,Y).
+
+mother_of(X,Y):-
+    female(X), parent_of(X,Y).
+
+grandfather_of(X,Y):-
+    male(X), parent_of(X,Z), parent_of(Z,Y).
+
+grandmother_of(X,Y):-
+    female(X), parent_of(X,Z), parent_of(Z,Y).
+
+brother_of(X,Y):-
+    male(X), father_of(Z,X), father_of(Z,Y), X =\= Y.
+
+
+
