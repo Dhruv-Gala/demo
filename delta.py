@@ -1,51 +1,89 @@
+import numpy as np
+import pandas as pd
 import math
-import matplotlib.pyplot as plt
 
-def sigmoid(x):
-    return 1 / (1 + math.exp(-x))
-def sigmoid_derivative(x):
-    return x * (1-x)
-def dot_product(a,b):
-    return sum([a[i] * b[i] for i in range(len(a))])
+def activation_func(x, choice):
+    if choice == 1:
+        return 1 / (1 + math.e ** -x)
+    elif choice == 2:
+        return (2 / (1 + math.e ** -x)) - 1
+    elif choice == 3:
+        return math.tanh(x)
+    elif choice == 4:
+        return max(0, x)
 
-Xi = [
-    [1, -2, 0, -1],
-    [0, 1.5, -0.5, -1],
-    [-1, 1, 0.5, -1]
-]
-d = [-1, -1, 1]  
-w = [1, -1, 0, 0.5]
+def activation_derivative(o, choice):
+    if choice == 1:
+        return o * (1 - o)
+    elif choice == 2:
+        return 0.5 * (1 - o ** 2)
+    elif choice == 3:
+        return 1 - o ** 2
+    elif choice == 4:
+        return 1 if o > 0 else 0
 
-alpha = 0.1  
-errors = []
+def calculate_delta_rule(weights, table, targets, alpha, inputs, activation_choice):
+    weights = np.array(weights)
+    table = np.array(table)
+    iteration = 0
+    while True:
+        nets, outputs, errors = [], [], []
+        new_weights = weights.copy()
+        for i in range(inputs):
+            net = np.dot(weights, table[i])
+            o = activation_func(net, activation_choice)
+            o_derivative = activation_derivative(o, activation_choice)
+            error = (targets[i] - o) * o_derivative
+            new_weights = new_weights + alpha * error * np.array(table[i])
 
-print("Initial Weights:", w)
+        nets.append(net.item())
+        outputs.append(o)
+        errors.append(error)
 
-for i in range(len(d)):
-    x = Xi[i]
-    net_input = dot_product(w, x)
-    y = sigmoid(net_input)
-    error = d[i] - y
-    y_derivative = sigmoid_derivative(y)
+        if all(round(e, 6) == 0 for e in errors):
+            print("\nTraining Converged!")
+            break
 
-    delta_w = [alpha * error * y_derivative * xi for xi in x]
-    w = [w[j] + delta_w[j] for j in range(len(w))]
+        print(f"\nIteration {iteration + 1}:")
+        df = pd.DataFrame({
+            "Net": nets,
+            "Output (o)": outputs,
+            "Target (o_)": targets,
+            "Error (o_ - o)": errors
+        })
+        print(df)
+        print("Updated Weights:", new_weights)
+        iteration += 1
+        weights = new_weights.copy()
+        print("\nFinal Updated Weights:", weights)
 
-    errors.append(abs(error))
+def delta_training():
+    inputs = int(input("Enter no. of inputs: "))
+    samples = int(input("Enter no. of samples: "))
+    print("Enter initial weights separated by spaces: ", end="")
+    weights = list(map(float, input().split()))
+    if len(weights) != samples:
+        print(f"Error: Please enter exactly {samples} weights.")
+        return
+    table = []
+    print(f"\nEnter {samples} values for each of the {inputs} inputs:")
+    for i in range(inputs):
+        values = list(map(float, input(f"Enter {samples} values for input {i+1} (space-separated): ").split()))
+    if len(values) != samples:
+        print(f"Error: Please enter exactly {samples} values for input {i+1}.")
+        return
+    table.append(values)
+    print("\nEnter the desired output (targets) separated by spaces: ", end="")
+    targets = list(map(float, input().split()))
+    if len(targets) != inputs:
+        print(f"Error: Please enter exactly {inputs} target values.")
+        return
 
-    print(f"Iteration {i+1}:")
-    print("Input:", x)
-    print("Net Input:", net_input)
-    print("Output (Sigmoid):", y)
-    print("Error:", error)
-    print("Weight Update:", delta_w)
-    print("Updated Weights:", w)
-    print("----------------------------------")
+    print("\nChoose an activation function:")
+    print("1.) Unipolar Sigmoid\n2.) Bipolar Sigmoid\n3.) Tanh\n4.) ReLU")
+    activation_choice = int(input("Enter function type (1-4): "))
+    alpha = float(input("\nEnter the learning rate (alpha): "))
+    calculate_delta_rule(weights, table, targets, alpha, inputs, activation_choice)
 
-print("Final Weights:", w)
-plt.plot(range(1, len(d) + 1), errors, marker='o', linestyle='-', color='r')
-plt.xlabel('Iteration')
-plt.ylabel('Absolute Error')
-plt.title('Error Reduction Over Iterations')
-plt.grid()
-plt.show()
+if __name__ == "__main__":
+    delta_training()
